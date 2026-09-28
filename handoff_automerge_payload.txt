@@ -1,0 +1,3 @@
+This non-empty payload must be preserved by Handoff AI auto-merge validation.
+Scenario: dirty working tree on main, same branch and synchronized baseline.
+Expected result: commit this file, push it to origin/main, and continue in Cloud.
