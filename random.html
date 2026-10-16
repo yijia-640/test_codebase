@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>随机灵感生成器</title>
+  <style>
+    :root {
+      --c1: #6a11cb;
+      --c2: #2575fc;
+      --fg: #ffffff;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      min-height: 100vh;
+      font-family: -apple-system, "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      color: var(--fg);
+      background: linear-gradient(135deg, var(--c1), var(--c2));
+      background-size: 200% 200%;
+      animation: drift 18s ease infinite;
+      transition: background 0.8s ease;
+    }
+
+    @keyframes drift {
+      0%   { background-position: 0% 50%; }
+      50%  { background-position: 100% 50%; }
+      100% { background-position: 0% 50%; }
+    }
+
+    .card {
+      width: 100%;
+      max-width: 560px;
+      padding: 48px 40px;
+      border-radius: 24px;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.28);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
+    }
+
+    h1 {
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      opacity: 0.9;
+      margin-bottom: 28px;
+    }
+
+    .quote {
+      font-size: 26px;
+      line-height: 1.6;
+      font-weight: 500;
+      min-height: 130px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0 8px;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+
+    .author {
+      margin-top: 16px;
+      font-size: 15px;
+      opacity: 0.75;
+      transition: opacity 0.3s ease;
+    }
+
+    .fade { opacity: 0; transform: translateY(6px); }
+
+    .swatches {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin: 32px 0 28px;
+    }
+
+    .swatch {
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.6);
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    .swatch:hover { transform: scale(1.12); }
+
+    button {
+      font: inherit;
+      font-weight: 600;
+      letter-spacing: 1px;
+      padding: 14px 36px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      color: var(--c1);
+      background: #fff;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    button:hover { transform: translateY(-2px); box-shadow: 0 12px 30px rgba(0, 0, 0, 0.28); }
+    button:active { transform: translateY(0); }
+
+    .hint {
+      margin-top: 18px;
+      font-size: 13px;
+      opacity: 0.7;
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>随机灵感生成器</h1>
+
+    <div class="quote" id="quote">点击下方按钮，获取一句随机的灵感。</div>
+    <div class="author" id="author">—</div>
+
+    <div class="swatches" id="swatches" title="点击色块复制颜色"></div>
+
+    <button id="gen">换一批</button>
+    <p class="hint">空格键也可以随机一下</p>
+  </main>
+
+  <script>
+    const quotes = [
+      { text: "把复杂的事情做简单，是能力；把简单的事情做极致，是本事。", author: "佚名" },
+      { text: "种一棵树最好的时间是十年前，其次是现在。", author: "非洲谚语" },
+      { text: "预测未来最好的方式，就是去创造它。", author: "彼得·德鲁克" },
+      { text: "不要等待机会，而要创造机会。", author: "佚名" },
+      { text: "所谓自由，不是随心所欲，而是自我主宰。", author: "康德" },
+      { text: "我们都在阴沟里，但仍有人仰望星空。", author: "王尔德" },
+      { text: "行动是治愈恐惧的良药，而犹豫拖延将不断滋养恐惧。", author: "佚名" },
+      { text: "生活的理想，就是为了理想的生活。", author: "张闻天" },
+      { text: "弱者等待时机，强者创造时机。", author: "佚名" },
+      { text: "路虽远，行则将至；事虽难，做则必成。", author: "古语" },
+      { text: "Stay hungry, stay foolish.", author: "Steve Jobs" },
+      { text: "Simplicity is the ultimate sophistication.", author: "Leonardo da Vinci" },
+      { text: "Talk is cheap. Show me the code.", author: "Linus Torvalds" },
+      { text: "Make it work, make it right, make it fast.", author: "Kent Beck" },
+      { text: "Done is better than perfect.", author: "Sheryl Sandberg" }
+    ];
+
+    const rand = (n) => Math.floor(Math.random() * n);
+    const hex = () => '#' + Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, '0');
+
+    const quoteEl = document.getElementById('quote');
+    const authorEl = document.getElementById('author');
+    const swatchEl = document.getElementById('swatches');
+
+    function randomTheme() {
+      const c1 = hex();
+      const c2 = hex();
+      document.documentElement.style.setProperty('--c1', c1);
+      document.documentElement.style.setProperty('--c2', c2);
+
+      swatchEl.innerHTML = '';
+      [c1, c2].forEach((c) => {
+        const s = document.createElement('div');
+        s.className = 'swatch';
+        s.style.background = c;
+        s.title = '点击复制 ' + c;
+        s.addEventListener('click', () => {
+          navigator.clipboard?.writeText(c).then(() => {
+            const old = s.title;
+            s.title = '已复制 ' + c;
+            setTimeout(() => (s.title = old), 1200);
+          });
+        });
+        swatchEl.appendChild(s);
+      });
+    }
+
+    function generate() {
+      quoteEl.classList.add('fade');
+      authorEl.classList.add('fade');
+      randomTheme();
+
+      setTimeout(() => {
+        const q = quotes[rand(quotes.length)];
+        quoteEl.textContent = q.text;
+        authorEl.textContent = '— ' + q.author;
+        quoteEl.classList.remove('fade');
+        authorEl.classList.remove('fade');
+      }, 250);
+    }
+
+    document.getElementById('gen').addEventListener('click', generate);
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space' && e.target.tagName !== 'BUTTON') {
+        e.preventDefault();
+        generate();
+      }
+    });
+
+    generate();
+  </script>
+</body>
+</html>
