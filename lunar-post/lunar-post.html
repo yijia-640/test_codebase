@@ -38,6 +38,7 @@
       --paper-ink: #20312f;
       --paper-muted: #5c6862;
       --shadow: #050b10;
+      --overlay: rgba(3, 9, 13, 0.78);
       --transparent: transparent;
       --bg-alpha: rgba(11, 22, 32, 0.72);
       --accent-alpha: rgba(255, 184, 107, 0.12);
@@ -212,6 +213,8 @@
     .button-primary:hover { background: var(--paper); border-color: var(--paper); }
     .button-secondary { color: var(--ink); background: var(--bg-alpha); }
     .button-secondary:hover { border-color: var(--muted); background: var(--bg2); }
+    .button-send { color: var(--accent2); border-color: var(--accent2); background: var(--accent2-alpha); }
+    .button-send:hover { color: var(--bg); background: var(--accent2); }
     .shortcut { margin: 16px 0 0; color: var(--muted); font-family: var(--font-mono); font-size: 10px; }
     kbd {
       display: inline-block;
@@ -286,6 +289,7 @@
     .message {
       min-height: 126px;
       margin: 0;
+      overflow-wrap: anywhere;
       font-size: 16px;
       line-height: 1.95;
       letter-spacing: 0.025em;
@@ -302,7 +306,7 @@
     }
     .address-label { margin: 0 0 8px; color: var(--paper-muted); font-family: var(--font-mono); font-size: 8px; letter-spacing: 0.14em; }
     .address { margin: 0; font-size: 12px; line-height: 1.9; }
-    .address span { display: inline-block; min-width: 150px; padding-bottom: 1px; border-bottom: 1px solid var(--paper-muted); }
+    .address span { display: inline-block; min-width: 150px; max-width: 100%; padding-bottom: 1px; overflow-wrap: anywhere; border-bottom: 1px solid var(--paper-muted); }
     .postmark {
       width: 72px;
       height: 72px;
@@ -343,6 +347,72 @@
     }
     .footer p { margin: 0; }
     .footer-code { font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.08em; }
+    body.composer-open { overflow: hidden; }
+    .composer {
+      width: min(calc(100% - 32px), 580px);
+      max-height: min(88vh, 760px);
+      margin: auto;
+      padding: 0;
+      overflow-y: auto;
+      color: var(--ink);
+      background: var(--bg2);
+      border: 1px solid var(--rule);
+      border-radius: 6px;
+      box-shadow: 0 32px 100px var(--shadow);
+    }
+    .composer::backdrop { background: var(--overlay); backdrop-filter: blur(7px); }
+    .composer[open] { animation: composer-in 220ms ease-out; }
+    .composer-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 28px 28px 20px;
+      border-bottom: 1px solid var(--rule);
+    }
+    .composer-eyebrow { margin: 0; color: var(--accent2); font-family: var(--font-mono); font-size: 9px; letter-spacing: 0.12em; }
+    .composer-title { margin: 5px 0 0; font-size: 26px; line-height: 1.3; }
+    .icon-button {
+      width: 38px;
+      height: 38px;
+      flex: 0 0 auto;
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      background: var(--transparent);
+      border: 1px solid var(--rule);
+      border-radius: 50%;
+      cursor: pointer;
+    }
+    .icon-button:hover { color: var(--ink); border-color: var(--muted); }
+    .icon-button:focus-visible { outline: 2px solid var(--accent2); outline-offset: 3px; }
+    .icon-button svg { width: 17px; height: 17px; }
+    .composer-body { padding: 24px 28px 28px; }
+    .composer-intro { margin: 0 0 22px; color: var(--muted); font-size: 13px; }
+    .composer-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .field { display: grid; gap: 7px; margin-bottom: 16px; }
+    .field label { font-size: 12px; font-weight: 700; }
+    .field input, .field textarea {
+      width: 100%;
+      padding: 12px 13px;
+      color: var(--ink);
+      background: var(--bg-alpha);
+      border: 1px solid var(--rule);
+      border-radius: 3px;
+      outline: none;
+      font-family: var(--font);
+      font-size: 14px;
+      line-height: 1.6;
+      transition: border-color 180ms ease, box-shadow 180ms ease;
+    }
+    .field input { height: 46px; }
+    .field textarea { min-height: 128px; resize: vertical; }
+    .field input:focus, .field textarea:focus { border-color: var(--accent2); box-shadow: 0 0 0 3px var(--accent2-alpha); }
+    .field input::placeholder, .field textarea::placeholder { color: var(--muted); opacity: 0.7; }
+    .field-meta { display: flex; justify-content: space-between; gap: 12px; color: var(--muted); font-family: var(--font-mono); font-size: 9px; }
+    .privacy-note { margin: 2px 0 22px; color: var(--muted); font-size: 11px; }
+    .composer-actions { display: flex; justify-content: flex-end; gap: 12px; }
+    .composer-actions .button { min-height: 46px; }
     .toast {
       position: fixed;
       left: 50%;
@@ -374,6 +444,10 @@
     }
 
     @keyframes blink { 0%, 100% { opacity: 0.45; } 50% { opacity: 1; } }
+    @keyframes composer-in {
+      0% { opacity: 0; transform: translateY(12px) scale(0.98); }
+      100% { opacity: 1; transform: translateY(0) scale(1); }
+    }
     @keyframes arrive {
       0% { opacity: 0.3; transform: rotate(1.8deg) translateY(18px) scale(0.98); }
       100% { opacity: 1; transform: rotate(1.8deg) translateY(0) scale(1); }
@@ -410,12 +484,19 @@
       .telemetry-item + .telemetry-item { border-left: 0; border-top: 1px solid var(--rule); }
       .coordinates { font-size: 16px; }
       .footer { flex-direction: column; gap: 8px; }
+      .composer-header { padding: 22px 20px 16px; }
+      .composer-title { font-size: 22px; }
+      .composer-body { padding: 20px; }
+      .composer-grid { grid-template-columns: 1fr; gap: 0; }
+      .composer-actions { display: grid; grid-template-columns: 1fr; }
+      .composer-actions .button-primary { order: -1; }
+      .toast { width: max-content; max-width: calc(100% - 32px); text-align: center; }
     }
     @media (prefers-reduced-motion: reduce) {
       *, *::before, *::after { scroll-behavior: auto !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
     }
     @media print {
-      .sky, .topbar, .intro-copy, .telemetry, .footer, .toast { display: none; }
+      .sky, .topbar, .intro-copy, .telemetry, .footer, .composer, .toast { display: none; }
       body { background: var(--paper); }
       .page { width: 100%; }
       .hero { display: block; padding: 0; }
@@ -450,6 +531,10 @@
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><rect x="8" y="8" width="11" height="11" rx="1"/><path d="M16 8V5H5v11h3"/></svg>
               复制这封信
             </button>
+            <button class="button button-send" id="send" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m3 11 18-8-8 18-2-8-8-2Z"/><path d="m11 13 4-4"/></svg>
+              发送明信片
+            </button>
           </div>
           <p class="shortcut">或按下 <kbd>R</kbd> 键，再收一封</p>
         </div>
@@ -476,7 +561,7 @@
             </div>
 
             <div class="letter" aria-live="polite" aria-atomic="true">
-              <p class="greeting">亲爱的地球居民：</p>
+              <p class="greeting" id="greeting">亲爱的地球居民：</p>
               <p class="message" id="message">不必一直发光。我也有大约一半的时间，把亮晶晶的自己藏在背面。休息不是失联，今晚请安心做一颗安静的星球。</p>
               <p class="signature">寄件人 / <span id="sender">背月面的守夜人</span></p>
             </div>
@@ -484,7 +569,7 @@
             <div class="delivery">
               <div>
                 <p class="address-label">DELIVER TO / 收件地址</p>
-                <p class="address"><span>太阳系 · 地球 · 你的心里</span><br>邮政编码：000001</p>
+                <p class="address"><span id="recipient-address">太阳系 · 地球 · 你的心里</span><br>邮政编码：000001</p>
               </div>
               <div class="postmark" aria-hidden="true">LUNAR POST<br><span id="post-date">2026.11.18</span><br>已盖销</div>
             </div>
@@ -513,6 +598,48 @@
       <p class="footer-code">MADE OF DUST, DREAMS &amp; A LITTLE GRAVITY</p>
     </footer>
   </div>
+
+  <dialog class="composer" id="composer" aria-labelledby="composer-title">
+    <div class="composer-header">
+      <div>
+        <p class="composer-eyebrow">OUTBOUND TRANSMISSION / 寄出心意</p>
+        <h2 class="composer-title" id="composer-title">发送一张明信片</h2>
+      </div>
+      <button class="icon-button" id="close-composer" type="button" aria-label="关闭寄件窗口">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg>
+      </button>
+    </div>
+    <form class="composer-body" id="send-form">
+      <p class="composer-intro">写下此刻想说的话，月球慢递会为你整理好信件，并调起默认邮件应用。</p>
+      <div class="composer-grid">
+        <div class="field">
+          <label for="recipient-name">收件人</label>
+          <input id="recipient-name" name="recipient" type="text" maxlength="24" placeholder="对方的名字" autocomplete="off" required>
+        </div>
+        <div class="field">
+          <label for="sender-name">寄件人</label>
+          <input id="sender-name" name="sender" type="text" maxlength="24" value="一位地球朋友" autocomplete="name" required>
+        </div>
+      </div>
+      <div class="field">
+        <label for="recipient-email">收件邮箱</label>
+        <input id="recipient-email" name="email" type="email" maxlength="120" placeholder="name@example.com" autocomplete="email" required>
+      </div>
+      <div class="field">
+        <label for="postcard-message">明信片内容</label>
+        <textarea id="postcard-message" name="message" maxlength="180" placeholder="把想说的话写在这里……" required></textarea>
+        <div class="field-meta"><span>把月光和心意一起寄出</span><span id="char-count">0 / 180</span></div>
+      </div>
+      <p class="privacy-note">内容仅在你的浏览器中处理，不会上传到服务器。</p>
+      <div class="composer-actions">
+        <button class="button button-secondary" id="cancel-send" type="button">再想想</button>
+        <button class="button button-primary" type="submit">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path d="m3 11 18-8-8 18-2-8-8-2Z"/><path d="m11 13 4-4"/></svg>
+          打开邮件发送
+        </button>
+      </div>
+    </form>
+  </dialog>
 
   <div class="toast" id="toast" role="status" aria-live="polite">信件已复制，记得分享月光。</div>
 
@@ -571,9 +698,16 @@
 
       var receiveButton = document.getElementById('receive');
       var copyButton = document.getElementById('copy');
+      var sendButton = document.getElementById('send');
+      var composer = document.getElementById('composer');
+      var sendForm = document.getElementById('send-form');
+      var messageInput = document.getElementById('postcard-message');
+      var charCount = document.getElementById('char-count');
       var postcard = document.getElementById('postcard');
+      var greeting = document.getElementById('greeting');
       var message = document.getElementById('message');
       var sender = document.getElementById('sender');
+      var recipientAddress = document.getElementById('recipient-address');
       var coordinates = document.getElementById('coordinates');
       var letterId = document.getElementById('letter-id');
       var title = document.querySelector('.postcard-title');
@@ -598,8 +732,10 @@
 
         window.setTimeout(function () {
           title.textContent = letter.title;
+          greeting.textContent = '亲爱的地球居民：';
           message.textContent = letter.message;
           sender.textContent = letter.sender;
+          recipientAddress.textContent = '太阳系 · 地球 · 你的心里';
           coordinates.textContent = letter.coordinates;
           letterId.textContent = 'NO. LP-' + String(Math.floor(1000 + Math.random() * 9000));
           postcard.classList.remove('is-new');
@@ -639,9 +775,81 @@
         showToast(copied ? '信件已复制，记得分享月光。' : '复制失败，请手动选择信件文字。');
       }
 
+      function updateCharacterCount() {
+        charCount.textContent = messageInput.value.length + ' / 180';
+      }
+
+      function openComposer() {
+        messageInput.value = message.textContent;
+        updateCharacterCount();
+        composer.showModal();
+        document.body.classList.add('composer-open');
+        document.getElementById('recipient-name').focus();
+      }
+
+      function closeComposer() {
+        composer.close();
+      }
+
+      function requireText(input) {
+        if (input.value.trim()) {
+          input.setCustomValidity('');
+          return true;
+        }
+        input.setCustomValidity('请填写内容，不能只输入空格。');
+        input.reportValidity();
+        return false;
+      }
+
+      function sendPostcard(event) {
+        event.preventDefault();
+        var recipientInput = document.getElementById('recipient-name');
+        var senderInput = document.getElementById('sender-name');
+        if (!requireText(recipientInput) || !requireText(senderInput) || !requireText(messageInput)) return;
+
+        var recipientName = recipientInput.value.trim();
+        var senderName = senderInput.value.trim();
+        var recipientEmail = document.getElementById('recipient-email').value.trim();
+        var postcardText = messageInput.value.trim();
+        var subject = '【月球慢递】' + senderName + ' 寄给 ' + recipientName + ' 的明信片';
+        var emailBody = recipientName + '：\n\n' + postcardText + '\n\n—— ' + senderName + '\n\nvia 月球慢递';
+
+        title.textContent = '一封写给你的信';
+        greeting.textContent = '亲爱的 ' + recipientName + '：';
+        message.textContent = postcardText;
+        sender.textContent = senderName;
+        recipientAddress.textContent = '太阳系 · 地球 · ' + recipientName;
+        coordinates.textContent = 'EARTH / OUTBOUND';
+        letterId.textContent = 'NO. OUT-' + String(Math.floor(1000 + Math.random() * 9000));
+        postcard.classList.remove('is-new');
+        void postcard.offsetWidth;
+        postcard.classList.add('is-new');
+        composer.close();
+        showToast('正在打开邮件应用，请在邮件中确认发送。');
+        window.location.href = 'mailto:' + encodeURIComponent(recipientEmail) + '?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(emailBody);
+      }
+
       receiveButton.addEventListener('click', receiveLetter);
       copyButton.addEventListener('click', copyLetter);
+      sendButton.addEventListener('click', openComposer);
+      document.getElementById('close-composer').addEventListener('click', closeComposer);
+      document.getElementById('cancel-send').addEventListener('click', closeComposer);
+      sendForm.addEventListener('submit', sendPostcard);
+      sendForm.addEventListener('input', function (event) {
+        event.target.setCustomValidity('');
+        if (event.target === messageInput) updateCharacterCount();
+      });
+      composer.addEventListener('close', function () {
+        document.body.classList.remove('composer-open');
+      });
+      composer.addEventListener('click', function (event) {
+        if (event.target !== composer) return;
+        var rect = composer.getBoundingClientRect();
+        var inside = event.clientX >= rect.left && event.clientX <= rect.right && event.clientY >= rect.top && event.clientY <= rect.bottom;
+        if (!inside) closeComposer();
+      });
       document.addEventListener('keydown', function (event) {
+        if (composer.open) return;
         if (event.key.toLowerCase() === 'r' && !event.ctrlKey && !event.metaKey && !event.altKey) {
           receiveLetter();
         }
